@@ -131,3 +131,5 @@ dist
 
 src/public/images/
 src/output/
+
+.db
