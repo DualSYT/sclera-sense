@@ -1,46 +1,30 @@
-import { Client, GatewayIntentBits } from 'discord.js';
 import { ENV } from '../../../config/envConfig';
 import path, { join } from 'path';
 import { WriteStream, createWriteStream, existsSync } from 'fs';
+import { exportClientDiscord } from '../exportClientDiscord';
 
-const ianGuardarMemesMencion = async () => {
-    const client = new Client({
-        intents: [
-            GatewayIntentBits.Guilds,
-            GatewayIntentBits.GuildMessages,
-            GatewayIntentBits.MessageContent,
-            GatewayIntentBits.GuildMessageReactions,
-            GatewayIntentBits.GuildMessageTyping,
-            GatewayIntentBits.DirectMessages,
-            GatewayIntentBits.DirectMessageReactions,
-            GatewayIntentBits.DirectMessageTyping,
-            GatewayIntentBits.GuildMembers,
-        ],
+const ianGuardarImagenesMencion = async (folder:string,subFolder:string,motif:string,includesArray:string[],allowedExtensions:string[]) => {
+
+    const clientDiscord = await exportClientDiscord();
+
+    await clientDiscord.login(String(ENV.TOKEN_DISCORD));
+
+    const folderBase = path.join(__dirname, `${ENV.FOLDER_BASE_IMAGENES}/${folder}/${subFolder}`);
+
+    const maxSizeBytes = 8 * 1024 * 1024;
+
+    clientDiscord.once('ready', () => {
+        console.log(`${clientDiscord.user?.tag} Funcion Guardar ${motif} Mencion Activada`);
     });
 
-    await client.login(String(ENV.TOKEN_DISCORD));
+    clientDiscord.on('messageCreate', async (message) => {
 
-    const folderBase = path.join(__dirname, `${ENV.FOLDER_BASE_IMAGENES}/memes/shitpost`);
-
-    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif'];
-
-    const maxSizeBytes = 1 * 1024 * 1024;
-
-    client.once('ready', () => {
-        console.log(`${client.user?.tag} Funcion Guardar Memes Mencion Activada`);
-    });
-
-    client.on('messageCreate', async (message) => {
         if (message.author.bot) return;
         if (message.mentions.users.size === 0) return;
 
-        const content = message.content.toLowerCase();
-        if (
-            content.includes('shitpost') ||
-            content.includes('meme') ||
-            content.includes('momo') ||
-            content.includes('memardo')
-        ) {
+        const content = message.content.toLowerCase().replace(/<@!?\d+>/, '').trim();
+      
+        if (includesArray.includes(content)) {
             if (message.attachments.size > 0) {
                 message.attachments.forEach(async (attachment) => {
 
@@ -56,8 +40,8 @@ const ianGuardarMemesMencion = async () => {
                                 response.pipe(fileStream);
                             });
 
-                            message.channel.send(`${message.author.toString()} ¡Genial! Acabo de guardar tu meme 🎉: ${attachment.name}`);
-                            console.log(`Meme guardado: ${attachment.name} Url: ${attachment.url}`);
+                            message.channel.send(`${message.author.toString()} ¡Genial! Acabo de guardar tu ${motif} 🎉: ${attachment.name}`);
+                            console.log(`${motif} guardado: ${attachment.name} Url: ${attachment.url}`);
                         } else {
                             try {
                                 await message.delete();
@@ -86,4 +70,4 @@ const ianGuardarMemesMencion = async () => {
 
 }
 
-export { ianGuardarMemesMencion }
+export { ianGuardarImagenesMencion }
