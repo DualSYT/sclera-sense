@@ -5,6 +5,7 @@ import router from "../routes/routes"
 import { ENV } from '../config/envConfig'
 import { dbConnect } from '../config/db';
 import { ianAlive } from '../helpers/discord/ian-bot';
+import { cypherAlive } from '../helpers/discord/cypher-bot';
 
 class Server {
     private app: any
@@ -32,7 +33,8 @@ class Server {
 
     async bots()
     {
-        await ianAlive();
+        //await ianAlive();
+        await cypherAlive();
     }
 
     async connect(){
